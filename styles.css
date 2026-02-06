@@ -1,0 +1,59 @@
+
+        :root { --primary: #03585b; --green: #28a745; --bg: #e5ddd5; }
+        body { font-family: sans-serif; background-color: #cbd5e1; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .app-container { display: none; width: 95%; max-width: 1000px; height: 85vh; gap: 20px; }
+        #chat-window { flex: 2; background: white; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-header { padding: 10px; border-bottom: 1px solid #eee; color: var(--green); font-weight: bold; display: flex; align-items: center; }
+        #message-display { flex: 1; padding: 20px; overflow-y: auto; background-color: var(--bg); display: flex; flex-direction: column; gap: 10px; }
+        .sidebar { flex: 0.8; background: #d1e7dd; border-radius: 8px; display: flex; flex-direction: column; border: 1px solid #dee2e6; }
+        .sidebar-header { background: var(--primary); color: white; padding: 12px; font-weight: bold; border-radius: 8px 8px 0 0; }
+        .user-list { padding: 10px; }
+        .user-item { padding: 8px; border-bottom: 1px solid #b7d1c4; display: flex; align-items: center; gap: 10px; }
+        .dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; }
+        .msg-row { display: flex; gap: 10px; max-width: 80%; margin-bottom: 10px; }
+        .sent { align-self: flex-end; flex-direction: row-reverse; }
+        .received { align-self: flex-start; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; }
+        .bubble { padding: 10px; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .sent .bubble { background: var(--primary); color: white; }
+        .received .bubble { background: white; }
+        #login-card { background: white; padding: 30px; border-radius: 10px; text-align: center; }
+        #message-form { padding: 15px; background: #f0f0f0; display: flex; gap: 10px; }
+        input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* 📱 Mobile view */
+@media (max-width: 768px) {
+  body {
+    height: 100vh;
+  }
+
+  .app-container {
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    gap: 0;
+  }
+
+  #chat-window {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  #message-display {
+    display: block;
+  }
+
+  .sidebar {
+    display: block;  
+  }
+
+  .chat-header {
+    display: block;  
+  }
+}
+
+
+
+    

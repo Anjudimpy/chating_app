@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Super Chat Interface</title>
+  <link rel="stylesheet" href="./styles.css">
+
+
+
+</head>
+<body>
+
+<!--  LOGIN -->
+<div id="login-card">
+  <h2>Join Chat</h2>
+  <input type="text" id="username-in" placeholder="Name"><br><br>
+  <input type="text" id="room-in" placeholder="Room ID"><br><br>
+  <button onclick="join()" style="width:100%; padding:10px; background:var(--primary); color:white; border:none;">
+    Join
+  </button>
+</div>
+
+<!--  CHAT APP -->
+<div class="app-container" id="main-app">
+  <div id="chat-window">
+    <div class="chat-header">
+       <span id="welcome-text"></span>
+      <i id="typing-status" style="margin-left:10px; font-size:0.8rem;"></i>
+    </div>
+
+    <div id="message-display"></div>
+
+    <form id="message-form">
+      <input type="text" id="msg-input" style="flex:1" placeholder="Enter message..." autocomplete="off">
+      <button type="submit" style="background:var(--green); color:white; border:none; padding:0 15px;">
+        Send
+      </button>
+    </form>
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      Connected Users <span id="user-count">0</span>
+    </div>
+    <div id="user-list" class="user-list"></div>
+  </div>
+</div>
+
+<!--  AUDIO NOTIFICATION -->
+<audio id="message-sound" preload="auto">
+  <source src="./notification.mp3" type="audio/mpeg">
+</audio>
+
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script>
+  const socket = io("http://localhost:3000");
+
+  let myName = "";
+  let myRoom = "";
+  let typingTimer;
+
+  function join() {
+    myName = document.getElementById("username-in").value;
+    myRoom = document.getElementById("room-in").value;
+
+    if (myName && myRoom) {
+      document.getElementById("login-card").style.display = "none";
+      document.getElementById("main-app").style.display = "flex";
+      document.getElementById("welcome-text").innerText = `welcome ${myName}`;
+      socket.emit("join", { username: myName, room: myRoom });
+    }
+  }
+
+  const msgInput = document.getElementById("msg-input");
+  const typingStatus = document.getElementById("typing-status");
+
+  msgInput.addEventListener("keydown", () => {
+    socket.emit("typing", { room: myRoom });
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+      socket.emit("stopTyping", { room: myRoom });
+    }, 1000);
+  });
+
+  socket.on("displayTyping", () => {
+    typingStatus.innerText = "typing...";
+  });
+
+  socket.on("removeTyping", () => {
+    typingStatus.innerText = "";
+  });
+
+  document.getElementById("message-form").onsubmit = (e) => {
+    e.preventDefault();
+    if (msgInput.value) {
+      socket.emit("sendMessage", {
+        username: myName,
+        message: msgInput.value,
+        room: myRoom
+      });
+      socket.emit("stopTyping", { room: myRoom });
+      msgInput.value = "";
+    }
+  };
+
+  socket.on("message", (data) => {
+    const isMe = data.username === myName;
+    const display = document.getElementById("message-display");
+
+    const row = document.createElement("div");
+    row.className = `msg-row ${isMe ? "sent" : "received"}`;
+
+    const avatar = isMe
+      ? "spider-man"
+      : (data.username?.length % 2 === 0 ? "batman" : "deadpool");
+
+    row.innerHTML = `
+      <img src="https://img.icons8.com/color/48/${avatar}.png" class="avatar">
+      <div class="bubble">
+        <small><b>${data.username || "System"}</b></small><br>
+        ${data.text || data.message}
+      </div>
+    `;
+
+    display.appendChild(row);
+    display.scrollTop = display.scrollHeight;
+
+    // PLAY SOUND FOR INCOMING MESSAGE ONLY
+    if (!isMe && data.username) {
+      const sound = document.getElementById("message-sound");
+      sound.currentTime = 0;
+      sound.play().catch(() => {});
+    }
+  });
+
+  socket.on("updateUserList", (users) => {
+    const list = document.getElementById("user-list");
+    document.getElementById("user-count").innerText = users.length;
+    list.innerHTML = "";
+    users.forEach(user => {
+      list.innerHTML += `<div class="user-item"><span class="dot"></span> ${user}</div>`;
+    });
+  });
+</script>
+</body>
+</html>
